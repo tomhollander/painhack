@@ -1,0 +1,19 @@
+<script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.0.8/stitch.js"></script>
+<script>
+    const client = stitch.Stitch.initializeDefaultAppClient('painhack-wsyce');
+
+    if(client.auth.hasRedirectResult()) {
+      client.auth.handleRedirectResult();
+    }
+
+    if (!client.auth.isLoggedIn) {
+        const credential = new stitch.GoogleRedirectCredential();
+        client.auth.loginWithRedirect(credential);
+    } else {
+        console.log("Logged in as " + client.auth.user.id);
+        console.log("Name: " + client.auth.user.profile.name);
+        console.log("Email: " + client.auth.user.profile.email);
+    }
+    
+    
+</script>
