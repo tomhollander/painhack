@@ -1,0 +1,101 @@
+<html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+  crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+  crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+  crossorigin="anonymous"></script>
+<script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.0.8/stitch.js"></script>
+<script>
+  const { Stitch, RemoteMongoClient } = stitch;
+    const client = stitch.Stitch.initializeDefaultAppClient('painhack-wsyce');
+  
+const mongodb = client.getServiceClient(RemoteMongoClient.factory,"mongodb-atlas");
+
+  //const db = mongodb.db('painhack');
+
+/// AUTH GOES HERE
+
+var getQueryString = function ( field, url ) {
+  var href = url ? url : window.location.href;
+  var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+  var string = reg.exec(href);
+  return string ? string[1] : null;
+};
+  
+
+    if(client.auth.hasRedirectResult()) {
+      console.log("handling redirect results");
+      client.auth.handleRedirectResult();
+    }
+
+    if (!client.auth.isLoggedIn) {
+        console.log("Logging in");
+        const credential = new stitch.GoogleRedirectCredential();
+        client.auth.loginWithRedirect(credential);
+
+    }else if(getQueryString('logout')){
+        console.log("Logging out");
+        client.auth.logout()
+        console.log("Logged out");
+    } 
+    else {
+        console.log("Logged in as " + client.auth.user.id);
+        console.log("Name: " + client.auth.user.profile.name);
+        console.log("Email: " + client.auth.user.profile.email);
+        displayPains();
+    }
+    
+
+  function displayPains() {
+    const collection = mongodb.db("painhack").collection("customerPain");
+    
+
+    return collection.find({ status: 'untriaged' }, {limit: 1000}).asArray().then(pains => {
+        html = pains.map(pain => `
+          <tr>
+            <td><a href="paining.html?id=${pain._id}">${pain._id}</a></td>
+            <td>${pain.customer.company}</td>
+            <td>${pain.product.name} ${pain.product.version}</td>
+            <td>${pain.title}</td>
+            <td>${pain.category}</td>
+          </tr>
+        `).join('');
+        html = ` <tr>
+                    <th>Pain ID</th>
+                    <th>Customer Name</th>
+                    <th>Product</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                </tr>` + html;
+        document.getElementById('painsContainer').innerHTML = html;
+      })
+      .catch(error => console.log(error));
+  };
+
+
+
+   const collection = mongodb.db("painhack").collection("customerPain");
+    
+
+    
+  
+</script>
+
+
+<body>
+
+<h1>Pain Triage List</h1>
+
+ <div class="container">
+            <br/>
+            <h3 class="text-center"></h3>
+            <table class="container-fluid" id="painsContainer">        
+            </div>
+        </div>  
+</body>
+
+
+
+</html>
