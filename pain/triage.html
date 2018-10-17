@@ -55,7 +55,7 @@ var getQueryString = function ( field, url ) {
     return collection.find({ status: 'untriaged' }, {limit: 1000}).asArray().then(pains => {
         html = pains.map(pain => `
           <tr>
-            <th scope="row"><a href="paining.html?id=${pain._id}">${pain._id}</a></td>
+            <td scope="row"><a href="paining.html?id=${pain._id}">${pain._id}</a></td>
             <td>${pain.customer.company}</td>
             <td>${pain.product.name} ${pain.product.version}</td>
             <td>${pain.title}</td>
@@ -97,10 +97,10 @@ var getQueryString = function ( field, url ) {
         <a class="nav-link" href="index.html">Create Pain Ticket</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link active" href="#">Pain Triage List</a>
+        <a class="nav-link active" href="#"><font color="#168B46">Pain Triage List</font></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#"></a>
+        <a class="nav-link" href="paining.html">Action Customer Pain</a>
       </li>
     </ul>
   </div>
@@ -115,7 +115,5 @@ var getQueryString = function ( field, url ) {
             </div>
         </div>  
 </body>
-
-
 
 </html>
