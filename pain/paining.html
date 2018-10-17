@@ -31,6 +31,7 @@ var getQueryString = function ( field, url ) {
         window.location.href = 'triage.html';
     }
 
+    const painId = getQueryString('id');
     displaySelectedPain();
     
     
@@ -38,7 +39,6 @@ var getQueryString = function ( field, url ) {
   function displaySelectedPain() {
     const collection = mongodb.db("painhack").collection("customerPain");
     
-    const painId = getQueryString('id');
     console.log("Pain ID: " + painId);
     return collection.find({ _id: BSON.ObjectId(painId) }).asArray().then(pains => {
         html = `<div><span>ID:</span><span>${pains[0]._id}</span></div>
@@ -66,31 +66,30 @@ function searchAggregatedPains() {
     const collection = mongodb.db("painhack").collection("productOpportunities");
     const searchTerms = document.getElementById("searchTerms").value;
 
-    return collection.find({ title: { $regex: new RegExp(searchTerms, 'g') }  }, {limit: 1000}).asArray().then(pains => {
+    return collection.find({ $or: [ 
+      { title: { $regex: new RegExp(searchTerms, '') } }, 
+      { description: { $regex: new RegExp(searchTerms, '') } }
+     ] }, {limit: 1000}).asArray().then(pains => {
         html = pains.map(pain => `
           <tr>
-            <td><a href="paining.html?id=${pain._id}">${pain._id}</a></td>
-            <td>${pain.customer.company}</td>
+            <td><a href="associate.html?painid=${painId}&oppid=${pain._id}">${pain._id}</a></td>
             <td>${pain.product.name} ${pain.product.version}</td>
             <td>${pain.title}</td>
-            <td>${pain.category}</td>
           </tr>
         `).join('');
         html = ` <tr>
-                    <th>Pain ID</th>
-                    <th>Customer Name</th>
+                    <th>Opportunity ID</th>
                     <th>Product</th>
                     <th>Title</th>
-                    <th>Category</th>
                 </tr>` + html;
         document.getElementById('painsContainer').innerHTML = html;
       })
       .catch(error => console.log(error));
   };
 
-
-   const collection = mongodb.db("painhack").collection("customerPain");
-    
+  function newOpp() {
+    document.location.href = `associate.html?painid=${painId}`;
+  }
 
     
   
@@ -110,6 +109,8 @@ function searchAggregatedPains() {
             <div><input type="text" id="searchTerms"> <button id="searchButton" onclick="searchAggregatedPains()">Search</button></div>
 
             <table class="container-fluid" id="painsContainer">     
+
+              <div><a href="javascript:newOpp();">Create a new Product Opportunity for this pain ticket</a></div>
         </div>  
 </body>
 
