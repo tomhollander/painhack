@@ -97,10 +97,27 @@ function searchAggregatedPains() {
 
 
 <body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#"><font color="#168B46">MongoDB Pain</font></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="index.html">Create Pain Ticket</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="triage.html"><font color="#168B46">Pain Triage List</font></a>
+      </li>
+    </ul>
+  </div>
+</nav>
 
-<h1>Action Customer Pain</h1>
+<div class="container">
+<h1 class="display-4">Action Customer Pain</h1>
 
- <div class="container">
+ <div>
             <br/>
             <h3>Selected Pain</h3>
             <div class="container-fluid" id="selectedPain"></div>        
@@ -112,6 +129,7 @@ function searchAggregatedPains() {
 
               <div><a href="javascript:newOpp();">Create a new Product Opportunity for this pain ticket</a></div>
         </div>  
+</div>
 </body>
 
 
