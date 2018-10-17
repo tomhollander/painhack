@@ -55,7 +55,7 @@ var getQueryString = function ( field, url ) {
     return collection.find({ status: 'untriaged' }, {limit: 1000}).asArray().then(pains => {
         html = pains.map(pain => `
           <tr>
-            <th scope="row"><a href="paining.html?id=${pain._id}">${pain._id}</a></td>
+            <td scope="row"><a href="paining.html?id=${pain._id}">${pain._id}</a></td>
             <td>${pain.customer.company}</td>
             <td>${pain.product.name} ${pain.product.version}</td>
             <td>${pain.title}</td>
