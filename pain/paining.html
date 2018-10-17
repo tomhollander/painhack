@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+  crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+  crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+  crossorigin="anonymous"></script>
+<script src="./dist/bson.bundle.js"></script>
+<script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.0.8/stitch.js"></script>
+<script>
+  const { Stitch, RemoteMongoClient } = stitch;
+    const client = stitch.Stitch.initializeDefaultAppClient('painhack-wsyce');
+  
+const mongodb = client.getServiceClient(RemoteMongoClient.factory,"mongodb-atlas");
+
+  //const db = mongodb.db('painhack');
+
+/// AUTH GOES HERE
+
+var getQueryString = function ( field, url ) {
+  var href = url ? url : window.location.href;
+  var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+  var string = reg.exec(href);
+  return string ? string[1] : null;
+};
+  
+
+    if (!client.auth.isLoggedIn) {
+        window.location.href = 'triage.html';
+    }
+
+    displaySelectedPain();
+    
+    
+
+  function displaySelectedPain() {
+    const collection = mongodb.db("painhack").collection("customerPain");
+    
+    const painId = getQueryString('id');
+    console.log("Pain ID: " + painId);
+    return collection.find({ _id: BSON.ObjectId(painId) }).asArray().then(pains => {
+        html = `<div><span>ID:</span><span>${pains[0]._id}</span></div>
+              <div><span>Customer:</span><span>${pains[0].customer.company}</span></div>
+              <div><span>Contact Name:</span><span>${pains[0].customer.contactName}</span></div>
+              <div><span>Contact Email:</span><span>${pains[0].customer.contactEmail}</span></div>
+              <div><span>Product Name:</span><span>${pains[0].product.name}</span></div>
+              <div><span>Product Version:</span><span>${pains[0].product.version}</span></div>
+              <div><span>Submitted Date:</span><span>${pains[0].submittedDate}</span></div>
+              <div><span>Submitted By:</span><span>${pains[0].submittedBy}</span></div>
+              <div><span>Title:</span><span>${pains[0].title}</span></div>
+              <div><span>Description:</span><span>${pains[0].description}</span></div>
+              <div><span>Category:</span><span>${pains[0].category}</span></div>
+              <div><span>Salesforce ID:</span><span>${pains[0].salesforceId}</span></div>
+              <div><span>Revenue Impact:</span><span>${pains[0].revenueImpact}</span></div>
+              <div><span>Priority:</span><span>${pains[0].priority}</span></div>
+              `;
+
+        document.getElementById('selectedPain').innerHTML = html;
+      })
+      .catch(error => console.log(error));
+  };
+
+function searchAggregatedPains() {
+    const collection = mongodb.db("painhack").collection("productOpportunities");
+    const searchTerms = document.getElementById("searchTerms").value;
+
+    return collection.find({ title: { $regex: new RegExp(searchTerms, 'g') }  }, {limit: 1000}).asArray().then(pains => {
+        html = pains.map(pain => `
+          <tr>
+            <td><a href="paining.html?id=${pain._id}">${pain._id}</a></td>
+            <td>${pain.customer.company}</td>
+            <td>${pain.product.name} ${pain.product.version}</td>
+            <td>${pain.title}</td>
+            <td>${pain.category}</td>
+          </tr>
+        `).join('');
+        html = ` <tr>
+                    <th>Pain ID</th>
+                    <th>Customer Name</th>
+                    <th>Product</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                </tr>` + html;
+        document.getElementById('painsContainer').innerHTML = html;
+      })
+      .catch(error => console.log(error));
+  };
+
+
+   const collection = mongodb.db("painhack").collection("customerPain");
+    
+
+    
+  
+</script>
+
+
+<body>
+
+<h1>Action Customer Pain</h1>
+
+ <div class="container">
+            <br/>
+            <h3>Selected Pain</h3>
+            <div class="container-fluid" id="selectedPain"></div>        
+            
+            <h3>Search for Product Opportunities</h3>
+            <div><input type="text" id="searchTerms"> <button id="searchButton" onclick="searchAggregatedPains()">Search</button></div>
+
+            <table class="container-fluid" id="painsContainer">     
+        </div>  
+</body>
+
+
+
+</html>
