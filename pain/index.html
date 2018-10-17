@@ -7,6 +7,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
   crossorigin="anonymous"></script>
 <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.0.8/stitch.js"></script>
+
 <script>
   const { Stitch, RemoteMongoClient } = stitch;
     const client = stitch.Stitch.initializeDefaultAppClient('painhack-wsyce');
@@ -30,51 +31,69 @@ var getQueryString = function ( field, url ) {
       client.auth.handleRedirectResult();
     }
 
-    if (!client.auth.isLoggedIn) {
+    if(getQueryString('logout')){
+        console.log("Logging out");
+        client.auth.logout()
+        console.log("Logged out");
+    }
+    else if (!client.auth.isLoggedIn) {
         console.log("Logging in");
         const credential = new stitch.GoogleRedirectCredential();
         client.auth.loginWithRedirect(credential);
 
-    }else if(getQueryString('logout')){
-        console.log("Logging out");
-        client.auth.logout()
-        console.log("Logged out");
     } 
     else {
         console.log("Logged in as " + client.auth.user.id);
         console.log("Name: " + client.auth.user.profile.name);
         console.log("Email: " + client.auth.user.profile.email);
-        displayPains();
+        
     }
     
-
-  function displayPains() {
-    const collection = mongodb.db("painhack").collection("customerPain");
-    
-
-    return collection.find({}, {limit: 1000}).asArray().then(pains => {
-        html = pains.map(pain => `
-          <tr>
-            <td>${pain.customer}, ${pain.customer}</td>
-            <td>${pain.email}</td>
-            <td>${pain.role} - ${pain.level}</td>
-            <td>${pain.salary}</td>
-          </tr>
-        `).join('');
-        document.getElementById('painsContainer').innerHTML = html;
-      })
-      .catch(error => console.log(error));
-  };
-
-
 
    const collection = mongodb.db("painhack").collection("customerPain");
     
 
-    
+    function savePain(){
        console.log("Inserting Data");
-       console.log( collection.insertOne({customer : "Test Customer"}));     
+
   
+
+       
+         collection.insertOne(
+         
+        {
+	        customer: {
+	        	company: document.getElementById('inputCompany').value,
+		        contactName: document.getElementById('inputCustomerContact').value,
+		        contactEmail: document.getElementById('inputCustomerContactEmail').value,
+        	},
+          product:  {
+            name: document.getElementById('inputProductName').value,
+            version: document.getElementById('inputProductVersion').value,
+          },	
+          submittedDate: new Date().toISOString().value,
+          submittedBy: client.auth.user.profile.email,
+          title: document.getElementById('inputPainTitle').value,
+          description: document.getElementById('inputPainDescription').value,
+          category: document.getElementById('inputPainType').value,
+          salesforceId: document.getElementById('inputsfdcID').value,
+          revenueImpact: document.getElementById('inputRevenueImpact').value,
+          priority: document.getElementById('inputPriority').value,
+          status: "untriaged"
+        });
+         console.log("Inserted Data"); 
+
+        bootstrap_alert = function() {}
+            bootstrap_alert.warning = function(message) {
+              $('#alert_placeholder').html('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+        }
+
+         
+              bootstrap_alert.warning('Saved');
+
+         document.getElementById("painform").reset();
+    
+  }
 </script>
 
 <body>
@@ -104,63 +123,67 @@ var getQueryString = function ( field, url ) {
 <br/>
 <h1 class="display-4">Create Pain Ticket</h1>
 <br/>
-<form>
-
-  <div class="form-group row">
-    <label for="inputCustomer" class="col-3 col-form-label">Customer</label>
-    <div class="col-9"><input type="text" class="form-control" id="inputCustomer" aria-describedby="emailHelp" placeholder="Enter Customer Name">
-    </div>
+<form id="painform">
+  <div class="form-group">
+    <label for="inputCompany">Company Name</label>
+    <input type="text" class="form-control" id="inputCompany" aria-describedby="emailHelp" placeholder="What Company is having pain?">
+  </div>
+  <div class="form-group">
+    <label for="inputCustomerContact">Customer Contact Name</label>
+    <input type="text" class="form-control" id="inputCustomerContact" aria-describedby="emailHelp" placeholder="Who at the Customer is having pain?">
+  </div>
+  <div class="form-group">
+    <label for="inputCustomerContactEmail">Customer Contact Email</label>
+    <input type="text" class="form-control" id="inputCustomerContactEmail" aria-describedby="emailHelp" placeholder="Who at the Customer is having pain?">
   </div>
 
-  <div class="form-group row">
-    <label for="productName" class="col-3 col-form-label">Product Name</label>
-    <div class="col-9"><input type="text" class="form-control" id="productName" aria-describedby="emailHelp" placeholder="Enter the effected Product">
-    </div>
+  <div class="form-group">
+    <label for="inputProductName">Product Name</label>
+    <input type="text" class="form-control" id="inputProductName" aria-describedby="emailHelp" placeholder="Enter the effected Product">
   </div>
 
-  <div class="form-group row">
-    <label for="productVersion" class="col-3 col-form-label">productVersion</label>
-    <div class="col-9"><input type="text" class="form-control" id="productVersion" aria-describedby="emailHelp" placeholder="Enter the Product Version">
-    </div>
+  <div class="form-group">
+    <label for="inputProductVersion">productVersion</label>
+    <input type="text" class="form-control" id="inputProductVersion" aria-describedby="emailHelp" placeholder="Enter the Product Version">
   </div>
 
-  <div class="form-group row">
-    <label for="painTitle" class="col-3 col-form-label">Pain Title</label>
-    <div class="col-9"><input type="text" class="form-control" id="painTitle" aria-describedby="emailHelp" placeholder="Enter Pain Title">
-    </div>
+  <div class="form-group">
+    <label for="inputPainTitle">Pain Title</label>
+    <input type="text" class="form-control" id="inputPainTitle" aria-describedby="emailHelp" placeholder="Enter Pain Title">
   </div>
 
-  <div class="form-group row">
-    <label for="painDescription" class="col-3 col-form-label">painDescription</label>
-    <div class="col-9"><textarea type="text" class="form-control" id="painDescription" aria-describedby="emailHelp" placeholder="Pain Description">
-    </textarea></div>
+  <div class="form-group">
+    <label for="inputPainDescription">Pain Description</label>
+    <input type="text" class="form-control" id="inputPainDescription" aria-describedby="emailHelp" placeholder="Pain Description">
   </div>
 
-  <div class="form-group row">
-    <label for="painType" class="col-3 col-form-label">Type of Pain</label>
-    <div class="col-9"><input type="text" class="form-control" id="painType" aria-describedby="emailHelp" placeholder="Type of Pain">
-    </div>
+  <div class="form-group">
+    <label for="inputPainType">Type of Pain</label>
+    <input type="text" class="form-control" id="inputPainType" aria-describedby="emailHelp" placeholder="Type of Pain">
   </div>
 
-  <div class="form-group row">
-    <label for="sfdcID" class="col-3 col-form-label">Salesforce case number</label>
-    <div class="col-9"><input type="text" class="form-control" id="sfdcID" aria-describedby="emailHelp" placeholder="Salesforce Reference">
-    </div>
+  <div class="form-group">
+    <label for="inputsfdcID">Salesforce case number</label>
+    <input type="text" class="form-control" id="inputsfdcID" aria-describedby="emailHelp" placeholder="Salesforce Reference">
   </div>
 
-  <div class="form-group row">
-    <label for="revenueImpact" class="col-3 col-form-label">Revenue impact</label>
-    <div class="col-9"><input type="text" class="form-control" id="revenueImpact" aria-describedby="emailHelp" placeholder="Revenue Impact">
-    </div>
+  <div class="form-group">
+    <label for="inputRevenueImpact">Revenue impact</label>
+    <input type="text" class="form-control" id="inputRevenueImpact" aria-describedby="emailHelp" placeholder="Revenue Impact">
   </div>
 
-  <div class="form-group row">
-    <label for="priority" class="col-3 col-form-label">Priority</label>
-    <div class="col-9"><input type="text" class="form-control" id="priority" aria-describedby="emailHelp" placeholder="Priority">
-    </div>
+  <div class="form-group">
+    <label for="inputPriority">Priority</label>
+    <input type="text" class="form-control" id="inputPriority" aria-describedby="emailHelp" placeholder="Priority">
   </div>
 
-  <button type="submit" class="btn btn-primary">Submit</button>
+  <div class="form-group">
+    
+    <input type="hidden" class="form-control" id="inputSave" aria-describedby="emailHelp" placeholder="">
+  </div>
+
+  <button type="button" class="btn btn-primary" onclick="savePain();return false;">Submit</button>
+  <div id = "alert_placeholder"></div>
 </form>
 
 </div>  
